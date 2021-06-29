@@ -157,6 +157,18 @@ func makeBuckets(m *dto.Metric, tags map[string]string, metricName string, metri
 		histogramMetric := metric.New("prometheus", newTags, fields, t, common.ValueType(metricType))
 		metrics = append(metrics, histogramMetric)
 	}
+
+	// Append +Inf bucket which should have the same value as SampleCount
+	newTags := tags
+	fields = make(map[string]interface{})
+	newTags["le"] = "+Inf"
+	fields[metricName+"_bucket"] = float64(m.GetHistogram().GetSampleCount())
+
+	histogramMetric, err := metric.New("prometheus", newTags, fields, t, common.ValueType(metricType))
+	if err == nil {
+		metrics = append(metrics, histogramMetric)
+	}
+
 	return metrics
 }
 
